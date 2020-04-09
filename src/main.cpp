@@ -1,15 +1,15 @@
 #pragma once
-#define EU863
 
 #include <Arduino.h>
 #include <Debug.h>
+#include <config.h>
+#include <deviceConfig.h>
 #include <TinyLoRa.h>
 #include <SPI.h>
 #include <lmic_util.h>
 #include <Adafruit_SleepyDog.h>
 #include <avr/pgmspace.h>
-#include <config.h>
-#include <deviceConfig.h>
+
 
 //******************Configuration of TinyLoRa********************
 uint8_t NwkSkey[16] = NWKSKEY;

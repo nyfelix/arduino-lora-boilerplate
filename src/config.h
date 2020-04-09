@@ -11,7 +11,7 @@
 
 /* LoRa Settings */
 #define DATARATE SF12BW125
-
+#define EU863
 
 /* Hardware Configuration */
 #ifdef FEATHERM0
