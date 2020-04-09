@@ -1,4 +1,4 @@
-# Adafruit TinyLoRa Library [![Build Status](https://travis-ci.org/adafruit/TinyLoRa.svg?branch=master)](https://travis-ci.org/adafruit/TinyLoRa)
+# Adafruit TinyLoRa Library [![Build Status](https://travis-ci.com/adafruit/TinyLoRa.svg?branch=master)](https://travis-ci.com/adafruit/TinyLoRa)
 
 
 Library for communicating with [The Things Network](https://www.thethingsnetwork.org/) using a Hope RF RFM95/96/97/98(W) LoRa Transceiver Module.
@@ -10,7 +10,7 @@ in this repository, and documents the API exposed by this driver. For
 practical details on how to connect and use this sensor, consult the Learning
 Guide.
 
-- [Adafruit Learning Guide](https://learn.adafruit.com/the-things-network-for-feather/using-a-feather-32u4)
+- [Adafruit Learning Guide](https://learn.adafruit.com/the-things-network-for-feather)
   (Installation details for Feather 32u4/Feather M0.)
 - [API Documentation](https://adafruit.github.io/TinyLoRa/) (automatically generated via doxygen from source)
 - [Adafruit Feather 32u4 RFM95 LoRa Radio](https://www.adafruit.com/product/3078)

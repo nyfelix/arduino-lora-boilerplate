@@ -1,4 +1,5 @@
 #pragma once
+#define EU863
 
 #include <Arduino.h>
 #include <Debug.h>
@@ -15,7 +16,7 @@ uint8_t NwkSkey[16] = NWKSKEY;
 uint8_t AppSkey[16] = APPSKEY;
 uint8_t DevAddr[4] = DEVADDR;
 
-TinyLoRa lora = TinyLoRa(2, 10);
+TinyLoRa lora = TinyLoRa(DIO1, NSS, RST);
 
 // Buffer for the LoRa payload.
 unsigned char payload[6];
@@ -131,7 +132,7 @@ void loop()
       
       digitalWrite(LED_BUILTIN,LOW);
       #ifndef DEEPSLEEP
-        simulateSleep(measureInverval, &sleepbit);
+        simulateSleep(sendInterval, &sleepbit);
       #endif
       #ifdef DEEPSLEEP 
         watchdogSleep(measureInverval, &sleepbit);

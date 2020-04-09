@@ -33,17 +33,14 @@ unsigned char loraData[4];
 const unsigned int sendInterval = 30;
 
 // Pinout for Adafruit Feather 32u4 LoRa
-TinyLoRa lora = TinyLoRa(7, 8);
+TinyLoRa lora = TinyLoRa(7, 8, 4);
 
 // Pinout for Adafruit Feather M0 LoRa
-//TinyLoRa lora = TinyLoRa(3, 8);
+//TinyLoRa lora = TinyLoRa(3, 8, 4);
 
 // pin the DHT22 is connected to
 #define DHTPIN 10
 DHT dht(DHTPIN, DHT22);
-
-// Pinout for Adafruit Feather M0 LoRa
-//TinyLoRa lora = TinyLoRa(3, 8);
 
 void setup()
 {

@@ -26,7 +26,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * Modified by Brent Rubell for Adafruit Industries.
  *
  * LGPL license, all text here must be included in any redistribution.
@@ -37,7 +37,11 @@
 #define TINY_LORA_H
 
 #include <Arduino.h>
-#include <avr/pgmspace.h>
+#if defined(ARDUINO_ARCH_AVR)
+  #include <avr/pgmspace.h>
+#elif defined(ARDUINO_ARCH_ESP32)
+  #include <pgmspace.h>
+#endif
 
 // uncomment for debug output
 // #define DEBUG
@@ -69,10 +73,14 @@ typedef enum rfm_datarates
 } rfm_datarates_t;
 
 /** Region configuration*/
-//#define US902 ///< Used in USA, Canada and South America
-#define EU863 ///< Used in Europe
+#if !defined(EU863) && !defined(AU915) && !defined(AS920)  
+  #define US902 ///< Used in USA, Canada and South America
+#endif
+//#define EU863 ///< Used in Europe
 //#define AU915 ///< Used in Australia
 //#define AS920 ///< Used in Asia
+
+#define RFM9x_VER   0x12 ///<Expected RFM9x RegVersion
 
 /* RFM Modes */
 #define MODE_SLEEP  0x00  ///<low-power mode
@@ -82,6 +90,7 @@ typedef enum rfm_datarates
 
 /* RFM Registers */
 #define REG_PA_CONFIG              0x09 ///<PA selection and Output Power control
+#define REG_PA_DAC                 0x4D ///<PA Higher Power Settings
 #define REG_PREAMBLE_MSB           0x20 ///<Preamble Length, MSB
 #define REG_PREAMBLE_LSB           0x21 ///<Preamble Length, LSB
 #define REG_FRF_MSB                0x06 ///<RF Carrier Frequency MSB
@@ -90,9 +99,10 @@ typedef enum rfm_datarates
 #define REG_FEI_LSB                0x1E ///<Info from Prev. Header
 #define REG_FEI_MSB                0x1D ///<Number of received bytes
 #define REG_MODEM_CONFIG           0x26 ///<Modem configuration register
+#define REG_VER                    0x42 ///<RFM9x version register
 
 /**************************************************************************/
-/*!
+/*! 
     @brief  TinyLoRa Class
 */
 /**************************************************************************/
@@ -101,22 +111,23 @@ class TinyLoRa
 	public:
 		uint8_t txrandomNum;  ///<random number for AES
 		uint16_t frameCounter;  ///<frame counter
-    void setChannel(rfm_channels_t channel);
-    void setDatarate(rfm_datarates_t datarate);
-    TinyLoRa(int8_t rfm_dio0, int8_t rfm_nss);
+		void setChannel(rfm_channels_t channel);
+		void setDatarate(rfm_datarates_t datarate);
+		void setPower(int8_t Tx_Power = 17);
+		TinyLoRa(int8_t rfm_dio0, int8_t rfm_nss, int8_t rfm_rst);
 		bool begin(void);
-		void sendData(unsigned char *Data, unsigned char Data_Length, unsigned int Frame_Counter_Tx);
+		void sendData(unsigned char *Data, unsigned char Data_Length, unsigned int Frame_Counter_Tx, uint8_t Frame_Port = 1);
 
 	private:
 		uint8_t randomNum;
-		int8_t _cs, _irq;
-    bool _isMultiChan;
-    unsigned char _rfmMSB, _rfmMID, _rfmLSB, _sf, _bw, _modemcfg;
-    static const unsigned char LoRa_Frequency[8][3];
+		int8_t _cs, _irq, _rst;
+		bool _isMultiChan;
+		unsigned char _rfmMSB, _rfmMID, _rfmLSB, _sf, _bw, _modemcfg;
+		static const unsigned char LoRa_Frequency[8][3];
 		static const unsigned char S_Table[16][16];
 		void RFM_Send_Package(unsigned char *RFM_Tx_Package, unsigned char Package_Length);
 		void RFM_Write(unsigned char RFM_Address, unsigned char RFM_Data);
-    uint8_t RFM_Read(uint8_t RFM_Address);
+		uint8_t RFM_Read(uint8_t RFM_Address);
 		void Encrypt_Payload(unsigned char *Data, unsigned char Data_Length, unsigned int Frame_Counter, unsigned char Direction);
 		void Calculate_MIC(unsigned char *Data, unsigned char *Final_MIC, unsigned char Data_Length, unsigned int Frame_Counter, unsigned char Direction);
 		void Generate_Keys(unsigned char *K1, unsigned char *K2);

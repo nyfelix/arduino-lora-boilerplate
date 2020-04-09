@@ -1,4 +1,4 @@
-// Hello LoRa Single Channel - ABP TTN Single Channel Packet Sender
+// Hello LoRa - ABP TTN Packet Sender (Multi-Channel)
 // Tutorial Link: https://learn.adafruit.com/the-things-network-for-feather/using-a-feather-32u4
 //
 // Adafruit invests time and resources providing this open source code.
@@ -31,10 +31,10 @@ unsigned char loraData[11] = {"hello LoRa"};
 // How many times data transfer should occur, in seconds
 const unsigned int sendInterval = 30;
 
-// Pinout for Feather 32u4 LoRa
+// Pinout for Adafruit Feather 32u4 LoRa
 TinyLoRa lora = TinyLoRa(7, 8, 4);
 
-// Pinout for Feather M0 LoRa
+// Pinout for Adafruit Feather M0 LoRa
 //TinyLoRa lora = TinyLoRa(3, 8, 4);
 
 void setup()
@@ -42,22 +42,30 @@ void setup()
   delay(2000);
   Serial.begin(9600);
   while (! Serial);
- 
+  
   // Initialize pin LED_BUILTIN as an output
   pinMode(LED_BUILTIN, OUTPUT);
   
   // Initialize LoRa
   Serial.print("Starting LoRa...");
-  // define channel to send data on
-  lora.setChannel(CH2);
+  // define multi-channel sending
+  lora.setChannel(MULTI);
   // set datarate
   lora.setDatarate(SF7BW125);
-    if(!lora.begin())
+  if(!lora.begin())
   {
     Serial.println("Failed");
     Serial.println("Check your radio");
     while(true);
   }
+
+  // Optional set transmit power. If not set default is +17 dBm.
+  // Valid options are: -80, 1 to 17, 20 (dBm).
+  // For safe operation in 20dBm: your antenna must be 3:1 VWSR or better
+  // and respect the 1% duty cycle.
+
+  // lora.setPower(17);
+
   Serial.println("OK");
 }
 
@@ -65,6 +73,9 @@ void loop()
 {
   Serial.println("Sending LoRa Data...");
   lora.sendData(loraData, sizeof(loraData), lora.frameCounter);
+  // Optionally set the Frame Port (1 to 255)
+  // uint8_t framePort = 1;
+  // lora.sendData(loraData, sizeof(loraData), lora.frameCounter, framePort);
   Serial.print("Frame Counter: ");Serial.println(lora.frameCounter);
   lora.frameCounter++;
 

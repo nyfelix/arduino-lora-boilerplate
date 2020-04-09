@@ -18,12 +18,14 @@
   #define VBATPIN A7
   #define REFVOL 3.3
   // Pinout for Adafruit Feather M0 LoRa
-  #define DIO1 3    // irq = dio1
-  #define CS 8      // cs = nss
+  #define DIO1 3     // irq = dio1
+  #define NSS 8      // cs = nss
+  #define RST 4
 #else
   #define VBATPIN A7
   #define REFVOL 5
   // Pinout for Uno with Dragino Lora Shield v1.2
-  #define DIO1 3    // irq = dio1
-  #define CS 8      // cs = nss
+  #define DIO1 2    // irq = dio1
+  #define NSS 10      // cs = nss
+  #define RST 9
 #endif 
