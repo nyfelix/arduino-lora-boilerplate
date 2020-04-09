@@ -19,7 +19,7 @@ uint8_t DevAddr[4] = DEVADDR;
 TinyLoRa lora = TinyLoRa(DIO1, NSS, RST);
 
 // Buffer for the LoRa payload.
-unsigned char payload[6];
+unsigned char payload[12];
 
 int sendInterval = SEND_INTERVAL; // duration of watchdochg sleeptime in s. Minimal sleepduration is 30s
 int measureInverval = MEASURE_INTERVAL;
