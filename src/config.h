@@ -6,7 +6,7 @@
 
 /* System behavior */
 //#define DEEPSLEEP // Use Deepsleep (if not, it sleep will be simulated)
-#define SEND_INTERVAL 30   // Time in seconds
+#define SEND_INTERVAL 10   // Time in seconds
 #define MEASURE_INTERVAL 2 // Time in seconds
 
 /* LoRa Settings */
