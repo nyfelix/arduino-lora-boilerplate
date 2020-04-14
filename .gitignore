@@ -31,6 +31,8 @@
 *.out
 *.app
 
-.pio/**
-.vscode/**
+.pio
+.vscode
 
+*.dblite
+.pio/build/uno/.sconsign.py27.dblite
