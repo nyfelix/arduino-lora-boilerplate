@@ -16,18 +16,24 @@ uint8_t NwkSkey[16] = NWKSKEY;
 uint8_t AppSkey[16] = APPSKEY;
 uint8_t DevAddr[4] = DEVADDR;
 
-TinyLoRa lora = TinyLoRa(DIO1, NSS, RST);
+TinyLoRa lora {DIO1, NSS, RST}; // The LoRa Implmentation used in this Boilerplate
+CayenneLPP payload(12); // Buffer for the LoRa payload.
 
-// Buffer for the LoRa payload.
-CayenneLPP payload(12);
-
-int sendInterval = SEND_INTERVAL; // duration of watchdochg sleeptime in s. Minimal sleepduration is 30s
-int measureInverval = MEASURE_INTERVAL;
-int sleepcounter = 0; // counts the how many times the watchdogSleep or simulateSleep reseted the counter.
-int sendCount = sendInterval/measureInverval;
+int sendInterval {SEND_INTERVAL}; // duration of watchdochg sleeptime in s. Minimal sleepduration is 30s
+int measureInverval {MEASURE_INTERVAL};
+int sleepCounter {0};   // counts the how many times the watchdogSleep or simulateSleep reseted the counter.
+int sendCounter {sendInterval/measureInverval};
 volatile bool sleepbit=false; //first loop without sleeping
 
+/* Prepare a simple state machine*/
+enum State{
+  OBSERVING,
+  SENDING,
+  FINISHED
+};
 
+
+State state {OBSERVING};
 
 /* Encode the data to send to the byte array payload. */
 void  preparePayolad() {
@@ -45,20 +51,14 @@ void  preparePayolad() {
   payload.addVoltage(3, vbat);
 }
 
-/* Prepare a simple state machine*/
-enum States{
-  observing,
-  sending,
-  finished
-};
 
-States currState = observing;
+
 
 /* This function is used to set the watchdog timer multipel times, so the sleep duration is longer than the max. value of the watchdogtimer.*/
 void watchdogSleep(int time_s){
   sleepbit = true;
   Watchdog.sleep(time_s*1000);//sleeptime in ms  
-  sleepcounter++;
+  sleepCounter++;
   sleepbit = false;
 }
 
@@ -67,7 +67,7 @@ void simulateSleep(int time_s){
   // ToDo: Simulate Interrupt
   sleepbit = true;
   delay(time_s*1000);
-  sleepcounter++;
+  sleepCounter++;
   sleepbit = false;
 }
 
@@ -97,9 +97,9 @@ void setup(){
 /** Statemachine*/
 void loop()
 {
-  switch (currState) { 
+  switch (state) { 
     
-    case observing:{ // u gathering and processing information with sleep pauses
+    case State::OBSERVING:{ // u gathering and processing information with sleep pauses
       debugLn("measure...");
       measure();
       debugLn("sleep");
@@ -110,13 +110,13 @@ void loop()
       #endif
       debugLn("end of sleep");
       // Read sensor data.,
-      if (sleepcounter >= sendCount) {
-        currState=sending;
+      if (sleepCounter >= sendCounter) {
+        state = SENDING;
       }
       break; 
     }
       
-    case sending:{ 
+    case State::SENDING:{ 
       digitalWrite(LED_BUILTIN, HIGH);
       debugLn("Sending LoRa Data...");
       debug("Frame Counter: "); 
@@ -126,10 +126,12 @@ void loop()
       lora.frameCounter++;
       delay(1000);
       digitalWrite(LED_BUILTIN, LOW);
-      currState=observing;
-      //currState=finished;
+      state = OBSERVING;
+      //state = FINISHED;
       break;
     } 
-  }       
+    case State::FINISHED:{ 
+      break;
+    }       
 }
 
