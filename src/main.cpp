@@ -1,20 +1,16 @@
-#pragma once
-
 #include <Arduino.h>
-#include <Debug.h>
-#include <config.h>
-#include <deviceConfig.h>
+#include "config.h"
+#include "deviceConfig.h"
 #include <TinyLoRa.h>
 #include <SPI.h>
-#include <lmic_util.h>
 #include <Adafruit_SleepyDog.h>
 #include <avr/pgmspace.h>
 #include <CayenneLPP.h>
+#include <Debug.h>
 
-//******************Configuration of TinyLoRa********************
-uint8_t NwkSkey[16] = NWKSKEY;
-uint8_t AppSkey[16] = APPSKEY;
-uint8_t DevAddr[4] = DEVADDR;
+uint8_t NwkSkey[16] = NWKSKEY;  // TTN Network Session Key
+uint8_t AppSkey[16] = APPSKEY;  // TTN Application Session Key
+uint8_t DevAddr[4] = DEVADDR;   // TTN Device Adress
 
 TinyLoRa lora {DIO1, NSS, RST}; // The LoRa Implmentation used in this Boilerplate
 CayenneLPP payload(12); // Buffer for the LoRa payload.
@@ -25,15 +21,14 @@ int sleepCounter {0};   // counts the how many times the watchdogSleep or simula
 int sendCounter {sendInterval/measureInverval};
 volatile bool sleepbit=false; //first loop without sleeping
 
-/* Prepare a simple state machine*/
+/* States of our simple state machine*/
 enum State{
   OBSERVING,
   SENDING,
   FINISHED
 };
 
-
-State state {OBSERVING};
+State state {OBSERVING}; // Current state of the program
 
 /* Encode the data to send to the byte array payload. */
 void  preparePayolad() {
@@ -50,9 +45,6 @@ void  preparePayolad() {
   vbat /= 10;
   payload.addVoltage(3, vbat);
 }
-
-
-
 
 /* This function is used to set the watchdog timer multipel times, so the sleep duration is longer than the max. value of the watchdogtimer.*/
 void watchdogSleep(int time_s){
@@ -76,13 +68,11 @@ void measure() {
 }
 
 void setup(){  
-  
   #ifdef SERIAL_BEGIN
     Serial.begin(9600);
     while (! Serial);
     debugLn("Serial started");
   #endif 
-
   debug("Starting LoRa...");
   lora.setChannel(MULTI);
   lora.setDatarate(DATARATE);
@@ -91,15 +81,13 @@ void setup(){
     debugLn("Failed: Check your radio");
   }
   debugLn(" OK");
-
 }
 
-/** Statemachine*/
 void loop()
 {
   switch (state) { 
     
-    case State::OBSERVING:{ // u gathering and processing information with sleep pauses
+    case State::OBSERVING:{ // Gathering and processing information with sleep pauses
       debugLn("measure...");
       measure();
       debugLn("sleep");
@@ -116,7 +104,7 @@ void loop()
       break; 
     }
       
-    case State::SENDING:{ 
+    case State::SENDING:{ // Sending currente agregated data to LoRa network
       digitalWrite(LED_BUILTIN, HIGH);
       debugLn("Sending LoRa Data...");
       debug("Frame Counter: "); 
@@ -132,6 +120,7 @@ void loop()
     } 
     case State::FINISHED:{ 
       break;
-    }       
+    }  
+  }     
 }
 
