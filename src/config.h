@@ -1,13 +1,12 @@
 #pragma once
 
 /* Debugging */
-#define SERIAL_BEGIN // Enable serial output
 #define DEBUG // Send Debug messages
 
 /* System behavior */
 //#define DEEPSLEEP // Use Deepsleep (if not, it sleep will be simulated)
 #define SEND_INTERVAL 10   // Time in seconds
-#define MEASURE_INTERVAL 2 // Time in seconds
+#define OBSERVATION_INTERVAL 2 // Time in seconds
 
 /* LoRa Settings */
 //#define DATARATE SF12BW125
