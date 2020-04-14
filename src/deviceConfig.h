@@ -2,7 +2,7 @@
 /* Configuration for each devive */
 
 /* Set the device ID for deployment, later to be replaced by compiler argument */
-#define DEVICE_NR 3
+#define DEVICE_NR 1
 
 #if DEVICE_NR==1
 
