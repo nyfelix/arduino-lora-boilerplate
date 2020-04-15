@@ -23,26 +23,26 @@ uint8_t DevAddr[4] = DEVADDR;   // TTN Device Adress
 TinyLoRa lora {DIO1, NSS, RST}; // The LoRa Implmentation used in this Boilerplate
 CayenneLPP payload(12);         // Buffer for the LoRa payload.
 
-const int C_SEND_INTERVAL {SEND_INTERVAL}; // duration of watchdochg sleeptime in s. Minimal sleepduration is 30s
-const int C_OBSERVATION_INTERVAL {OBSERVATION_INTERVAL};
-const int numObservationsTillSend {C_SEND_INTERVAL/C_OBSERVATION_INTERVAL};
-int sleepCounter {0};   // counts the how many times the watchdogSleep or simulateSleep reseted the counter.
+const int C_SEND_INTERVAL {SEND_INTERVAL}; // Interval for sending the data to the cloud in seconds
+const int C_OBSERVATION_INTERVAL {OBSERVATION_INTERVAL}; // Interval for observing the sensors
+const int numObservationsTillSend {C_SEND_INTERVAL/C_OBSERVATION_INTERVAL}; // Number of sensor intervals before sending out the data
+int sleepCounter {0};   // counts the how many times the watchdogSleep or simulateSleep was called
 
 /* Define Statemachine: States, Functions, Events, Transiitions */
-// Function prototypes
+/* Function prototypes */
 void observe();
 void send();
 void sleep();
 
-// States
-//                    Enter  State     Exit
+/* States
+                     Enter  State     Exit  */
 State stateSleeping  (NULL,  &sleep ,  NULL);
 State stateObserving (NULL,  &observe, NULL);
 State stateSending   (NULL,  &send,    NULL);
 State stateFinished  (NULL,  NULL,     NULL);
 Fsm fsm(&stateSleeping);
 
-// Events
+/* Events */
 enum Event{
   WAKEUP,       // Imediate Wake up (e.g. on interupt)
   SLEEP,        // Sleep and try to save energy
@@ -50,7 +50,7 @@ enum Event{
   FINISH        // For debugging we want to stop the program and do nothing after sending out over LoRa (keep the device from beeing blocked)
 };
 
-// Transitions
+/* Transitions */
 void defineFSMTransitions () {
   fsm.add_transition(&stateSleeping,  &stateObserving, Event::WAKEUP, NULL);
   fsm.add_transition(&stateObserving, &stateSleeping,  Event::SLEEP,  NULL);
@@ -59,13 +59,15 @@ void defineFSMTransitions () {
   fsm.add_transition(&stateSending,   &stateFinished,  Event::FINISH, NULL);
 }
 
+/* end of define state machine */
+
 /* Declare Sensors  */
 RandomDataSensor temperature {10,30};
 RandomDataSensor humiditiy {40,80};
 VoltageSensor batteryVoltage {VBATPIN, REFVOL};
 
+/* observe all sensors and process their data accoring to their sensor class implementation */
 void observe() {
-  // Process all sensors
   debug("Start observing...");
   temperature.measure();
   humiditiy.measure();
@@ -77,10 +79,8 @@ void observe() {
     fsm.trigger(Event::SEND);
   }
 }
-
-
-
-/* This function is used to set the watchdog timer multipel times, so the sleep duration is longer than the max. value of the watchdogtimer.*/
+/* Sleep implementation accoring to the platform */
+/* This function is used to set the watchdog timer to sleep between the observation invervals.*/
 #ifdef FEATHERM0
 void sleep(){
   Watchdog.sleep(C_OBSERVATION_INTERVAL*1000); //sleeptime in ms  
@@ -98,12 +98,13 @@ void sleep(){
 }
 #endif
 
+/* Prepare the payload and send over LoRa */
 void send() {
   payload.reset();
   payload.addTemperature(1, temperature.getValue().avg);
   payload.addTemperature(2, temperature.getValue().min);
   payload.addTemperature(3, temperature.getValue().max);
-  payload.addRelativeHumidity(4, humiditiy.getValue().avg);
+  payload.addRelativeHumidity(4, humiditiy.getValue().avg/100);
   payload.addVoltage(5, batteryVoltage.getValue().avg);
 
   digitalWrite(LED_BUILTIN, HIGH);
@@ -147,4 +148,3 @@ void setup() {
 void loop() {
   fsm.run_machine();
 }
-
