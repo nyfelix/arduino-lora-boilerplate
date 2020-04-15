@@ -23,7 +23,6 @@ uint8_t DevAddr[4] = DEVADDR;   // TTN Device Adress
 TinyLoRa lora {DIO1, NSS, RST}; // The LoRa Implmentation used in this Boilerplate
 CayenneLPP payload(12);         // Buffer for the LoRa payload.
 
-const int MAX_SEND {1};
 const int C_SEND_INTERVAL {SEND_INTERVAL}; // duration of watchdochg sleeptime in s. Minimal sleepduration is 30s
 const int C_OBSERVATION_INTERVAL {OBSERVATION_INTERVAL};
 const int numObservationsTillSend {C_SEND_INTERVAL/C_OBSERVATION_INTERVAL};
@@ -112,7 +111,7 @@ void send() {
   debug("Frame Counter: "); 
   debugLn(lora.frameCounter);
   debug("Temperature: "); debug(temperature.getValue().avg); debug(", "); debug(temperature.getValue().min); debug(", "); 
-  debugLn(temperature.getValue().max);
+  debugLn(temperature.getValue().max); 
   lora.sendData(payload.getBuffer(), payload.getSize() , lora.frameCounter);  
   lora.frameCounter++;
   delay(1000);
@@ -122,14 +121,12 @@ void send() {
   humiditiy.reset();
   batteryVoltage.reset();
   sleepCounter = 0;
-  if (lora.frameCounter >= MAX_SEND) {
+  #ifdef DEBUG // For debuging only send once to prevent the device from beeing blocked by TTN
     fsm.trigger(Event::FINISH);
-  } else {
+  #else
     fsm.trigger(Event::SLEEP);
-  }
+  #endif
 }
-
-
 
 void setup() {  
   #ifdef DEBUG
