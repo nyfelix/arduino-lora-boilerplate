@@ -10,6 +10,7 @@
 #include <FSM.h>
 #include "RandomDataSensor.h"
 #include "VoltageSensor.h"
+#include "FilterMinMaxAvg.h"
 #include "Debug.h"
 
 #ifdef FEATHERM0
@@ -52,6 +53,7 @@ enum Event{
 
 /* Transitions */
 void defineFSMTransitions () {
+  //                 From             To               Trigger Event  Transition Function
   fsm.add_transition(&stateSleeping,  &stateObserving, Event::WAKEUP, NULL);
   fsm.add_transition(&stateObserving, &stateSleeping,  Event::SLEEP,  NULL);
   fsm.add_transition(&stateObserving, &stateSending,   Event::SEND,   NULL);
@@ -61,9 +63,10 @@ void defineFSMTransitions () {
 
 /* end of define state machine */
 
-/* Declare Sensors  */
-RandomDataSensor temperature {10,30};
-RandomDataSensor humiditiy {40,80};
+/* Declare Sensors  */ 
+//RandomDataSensor<int> temperature {10, 30, FilterMinMaxAvg<int>{}};
+RandomDataSensor<MinMaxAvg<int>> temperature {10, 30, FilterMinMaxAvg<int>{}};
+RandomDataSensor<MinMaxAvg<float>> humiditiy {0.4, 0.8, FilterMinMaxAvg<float>{}};
 VoltageSensor batteryVoltage {VBATPIN, REFVOL};
 
 /* observe all sensors and process their data accoring to their sensor class implementation */
@@ -113,7 +116,7 @@ void send() {
   debugLn(lora.frameCounter);
   debug("Temperature: "); debug(temperature.getValue().avg); debug(", "); debug(temperature.getValue().min); debug(", "); 
   debugLn(temperature.getValue().max); 
-  lora.sendData(payload.getBuffer(), payload.getSize() , lora.frameCounter);  
+  //lora.sendData(payload.getBuffer(), payload.getSize() , lora.frameCounter);  
   lora.frameCounter++;
   delay(1000);
   digitalWrite(LED_BUILTIN, LOW);
@@ -122,11 +125,12 @@ void send() {
   humiditiy.reset();
   batteryVoltage.reset();
   sleepCounter = 0;
-  #ifdef DEBUG // For debuging only send once to prevent the device from beeing blocked by TTN
+  /*#ifdef DEBUG // For debuging only send once to prevent the device from beeing blocked by TTN
     fsm.trigger(Event::FINISH);
   #else
     fsm.trigger(Event::SLEEP);
-  #endif
+  #endif*/
+  fsm.trigger(Event::SLEEP);
 }
 
 void setup() {  

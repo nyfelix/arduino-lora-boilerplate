@@ -1,20 +1,25 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
-template <typename V>
+#include "Filter.h"
+
+template <typename V> // Processed outputdata of Sensor
 
 class Sensor {
     public:
+        Sensor(Filter filter) : mfilter{filter};
         virtual void measure() {};
         V getValue() {
             return value;
-        }
-        void addFilter() {};
-        virtual void reset() {};
+        };
+
+        virtual void reset() {
+
+        };
 
     protected:
         V value;
+        Filter mfilter;
 };
-
 
 #endif

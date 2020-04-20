@@ -4,15 +4,27 @@
 #include "Sensor.h"
 #include "DataStrctures.h"
 
-class RandomDataSensor : public Sensor<MinMaxAvg> {
+template <typename T>
+
+class RandomDataSensor : public Sensor {
     public:
-        RandomDataSensor(int rangeMin, int rangeMax);
-        void measure();
-        void reset();
+        RandomDataSensor(T rangeMin, T rangeMax) : Sensor(Filter filter), rMin{rangeMin}, rMax{rangeMax} {
+            reset();
+        };
+        void measure() {
+            T val = rMin + rand()*(rMax-rMin);
+        };
+
+        void reset() {
+            //value.min = 0;
+            //value.max = 0;
+            //value.avg = 0;
+            count = 0;
+        };
     private:
-        int rMin;
-        int rMax;
-        int count;
+        T rMin;
+        T rMax;
+        int count {0};
 };
 
 

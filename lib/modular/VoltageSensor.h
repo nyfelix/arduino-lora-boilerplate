@@ -4,7 +4,7 @@
 #include "Sensor.h"
 #include "DataStrctures.h"
 
-class VoltageSensor : public Sensor<MinMaxAvg> {
+class VoltageSensor : public Sensor<MinMaxAvg<float>> {
     public:
         VoltageSensor(int pinVoltage, float referenceVoltage);
         void measure();
