@@ -3,10 +3,12 @@
 #ifndef DATASTRUCTURES_H
 #define DATASTRUCTURES_H
 
+template <typename T>
+
 struct MinMaxAvg {
-    int min {0};
-    int max {0};
-    int avg {0};
+    T min {0};
+    T max {0};
+    T avg {0};
 };
 
 #endif

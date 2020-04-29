@@ -4,7 +4,7 @@
 #include "Sensor.h"
 #include "DataStrctures.h"
 
-class RandomDataSensor : public Sensor<MinMaxAvg> {
+class RandomDataSensor : public Sensor<MinMaxAvg<int>> {
     public:
         RandomDataSensor(int rangeMin, int rangeMax);
         void measure();

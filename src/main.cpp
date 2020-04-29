@@ -21,7 +21,7 @@ uint8_t AppSkey[16] = APPSKEY;  // TTN Application Session Key
 uint8_t DevAddr[4] = DEVADDR;   // TTN Device Adress
 
 TinyLoRa lora {DIO1, NSS, RST}; // The LoRa Implmentation used in this Boilerplate
-CayenneLPP payload(12);         // Buffer for the LoRa payload.
+CayenneLPP payload(22);         // Buffer for the LoRa payload.
 
 const int C_SEND_INTERVAL {SEND_INTERVAL}; // Interval for sending the data to the cloud in seconds
 const int C_OBSERVATION_INTERVAL {OBSERVATION_INTERVAL}; // Interval for observing the sensors
@@ -81,8 +81,10 @@ void observe() {
 }
 /* Sleep implementation accoring to the platform */
 /* This function is used to set the watchdog timer to sleep between the observation invervals.*/
-#ifdef FEATHERM0
+
+#if defined(FEATHERM0) && !defined(DEBUG)
 void sleep(){
+  Watchdog.reset();
   Watchdog.sleep(C_OBSERVATION_INTERVAL*1000); //sleeptime in ms  
   sleepCounter++;
   fsm.trigger(Event::WAKEUP);
@@ -111,8 +113,6 @@ void send() {
   debugLn("Sending LoRa Data...");
   debug("Frame Counter: "); 
   debugLn(lora.frameCounter);
-  debug("Temperature: "); debug(temperature.getValue().avg); debug(", "); debug(temperature.getValue().min); debug(", "); 
-  debugLn(temperature.getValue().max); 
   lora.sendData(payload.getBuffer(), payload.getSize() , lora.frameCounter);  
   lora.frameCounter++;
   delay(1000);
