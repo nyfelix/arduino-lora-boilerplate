@@ -7,3 +7,4 @@ Open Tasks:
 * Implement data strucutres
 * Implement filters
 * Implement sensor array class
+* Implement wrapper for LIMC

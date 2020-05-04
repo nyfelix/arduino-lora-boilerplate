@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include "config.h"
 #include "deviceConfig.h"
-#include <TinyLoRa.h>
+#include "LoraTinyLoRa.h"       // TinyLora Wrapper, could be replaced by other LoRa implementation
 #include <CayenneLPP.h>
 #include <FSM.h>
 #include "RandomDataSensor.h"
@@ -16,11 +16,14 @@
   #include <Adafruit_SleepyDog.h>
 #endif
 
+// Alternatively choose other LoRa Implementation from the modular-lora framework
+// Global Variables required for TinyLoRa ABP
 uint8_t NwkSkey[16] = NWKSKEY;  // TTN Network Session Key
 uint8_t AppSkey[16] = APPSKEY;  // TTN Application Session Key
 uint8_t DevAddr[4] = DEVADDR;   // TTN Device Adress
+LoraTinyLoRa lora;
 
-TinyLoRa lora {DIO1, NSS, RST}; // The LoRa Implmentation used in this Boilerplate
+// Any other playoad format coudl be use, currently we like CayenneLPP
 CayenneLPP payload(22);         // Buffer for the LoRa payload.
 
 const int C_SEND_INTERVAL {SEND_INTERVAL}; // Interval for sending the data to the cloud in seconds
@@ -111,10 +114,7 @@ void send() {
 
   digitalWrite(LED_BUILTIN, HIGH);
   debugLn("Sending LoRa Data...");
-  debug("Frame Counter: "); 
-  debugLn(lora.frameCounter);
-  lora.sendData(payload.getBuffer(), payload.getSize() , lora.frameCounter);  
-  lora.frameCounter++;
+  lora.send(payload.getBuffer(), payload.getSize());
   delay(1000);
   digitalWrite(LED_BUILTIN, LOW);
 
@@ -123,7 +123,11 @@ void send() {
   batteryVoltage.reset();
   sleepCounter = 0;
   #ifdef DEBUG // For debuging only send once to prevent the device from beeing blocked by TTN
-    fsm.trigger(Event::FINISH);
+    if (lora.getFrameCounter() > 1) {
+      fsm.trigger(Event::FINISH);
+    } else {
+      fsm.trigger(Event::SLEEP);
+    }
   #else
     fsm.trigger(Event::SLEEP);
   #endif
@@ -135,13 +139,7 @@ void setup() {
     while (! Serial);
     debugLn("Serial started");
   #endif 
-  debug("Starting LoRa...");
-  lora.setChannel(MULTI);
-  lora.setDatarate(DATARATE);
-  if(!lora.begin())                                                                                                                                                                                                                                                                                                                                                                                                                                                                    {
-    debugLn("Failed: Check your radio");
-  }
-  debugLn(" OK");
+  lora.begin(DATARATE, MULTI);
   defineFSMTransitions();
 }
 
